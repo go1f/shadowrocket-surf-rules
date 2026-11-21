@@ -28,9 +28,9 @@
 | 顺序 | 匹配 | 动作 |
 | --- | --- | --- |
 | 1 | ChatGPT 和 OpenAI 核心服务域名、DNS 检测域名例外 | 进入内置 `PROXY`，优先于广告和直连规则 |
-| 2 | 开屏误杀例外、已确认的局域网目标 | 例外显式指定原本应使用的策略，局域网直连 |
+| 2 | 开屏误杀例外、已确认的局域网目标和微信媒体域名 | 例外显式指定原本应使用的策略，局域网和微信媒体域名直连 |
 | 3 | 专用开屏广告域名、已验证的公共广告域名 | `REJECT`，规则构建时写入主配置 |
-| 4 | 常用国内服务域名、`.cn`，以及地址已知时适用的国内 IP 规则 | `DIRECT` |
+| 4 | 常用国内服务域名、`.cn`，以及已有目标 IP 时适用的腾讯网络和国内 IP 规则 | `DIRECT` |
 | 5 | 其他目的地 | `FINAL,PROXY` |
 
 核心域名基于 OpenAI 官方网络说明维护，覆盖认证、会话、静态资源和附件。共享第三方域名按实际依赖精确匹配。使用 ChatGPT 的文本流式输出、附件、登录与 WebSocket 做回归验证。 [OpenAI 网络建议](https://help.openai.com/en/articles/9247338-network-recommendations-for-chatgpt-errors-on-web-and-apps)
@@ -41,7 +41,7 @@ Shadowrocket 的 `PROXY` 使用首页当前节点。使用者在自己的服务�
 
 ### DNS 加密
 
-主用阿里公共 DNS `https://223.5.5.5/dns-query`，备用阿里 `tls://223.5.5.5` 和腾讯 DNSPod `https://120.53.53.53/dns-query`。端点用 IP 直接连接，DoH 冷启动无需先为解析器查询域名。两家服务的 IP 证书与 DNS 应答已在开发环境验证。允许 `DIRECT` 的公网业务仍由客户端配置的加密 DNS 解析。备用端点的实际调用顺序和故障表现待 Wi-Fi 与蜂窝网实测。 [阿里公共 DNS](https://alidns.com/) · [腾讯 DNSPod](https://cloud.tencent.com/document/product/302/110786)
+主解析选择阿里公共 DNS、腾讯 DNSPod、Cloudflare 和 Google Public DNS 的 DoH，阿里 `tls://223.5.5.5` 仅作备用。端点用 IP 直接连接，DoH 冷启动无需先为解析器查询域名。四个 DoH 端点的 IP 证书与 DNS 应答已在开发环境验证。允许 `DIRECT` 的公网业务仍由客户端配置的加密 DNS 解析。不同网络下的解析选择与故障表现待 Wi-Fi 和蜂窝网实测。 [阿里公共 DNS](https://alidns.com/) · [腾讯 DNSPod](https://cloud.tencent.com/document/product/302/110786) · [Cloudflare DNS](https://developers.cloudflare.com/1.1.1.1/ip-addresses/) · [Google Public DNS](https://developers.google.com/speed/public-dns/docs/doh)
 
 主配置应关闭系统 DNS 和明文备用解析。优先验证 DoH 引导、节点域名解析和代理侧解析。如果解析器需要经代理才能连通，先验证隧道启动时能否在无循环依赖的情况下建立 DoH。分别在本地接口观察冷启动、直连、代理、IPv6 切换和故障时的 TCP/UDP 53 请求。若该客户端版本有无法关闭的明文行为，记录具体触发条件，按实测结果决定是否达到发布条件。 [Shadowrocket App Store 能力与版本记录](https://apps.apple.com/us/app/shadowrocket/id932747118)
 

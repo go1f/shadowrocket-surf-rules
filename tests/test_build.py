@@ -34,7 +34,10 @@ class BuildTests(unittest.TestCase):
         template = (ROOT / "config/surf.conf.in").read_text(encoding="utf-8")
         with TemporaryDirectory() as directory:
             path = Path(directory) / "ads.list"
-            for rule in ("DOMAIN,ws.chatgpt.com", "DOMAIN-SUFFIX,cloudflare.com", "DOMAIN,captive.apple.com"):
+            for rule in (
+                "DOMAIN,ws.chatgpt.com", "DOMAIN-SUFFIX,cloudflare.com", "DOMAIN,captive.apple.com",
+                "DOMAIN,mmsns.qpic.cn", "DOMAIN-SUFFIX,qq.com",
+            ):
                 with self.subTest(rule=rule):
                     path.write_text(rule, encoding="utf-8")
                     with self.assertRaisesRegex(ValueError, "overlaps a protected host"):
@@ -47,14 +50,32 @@ class BuildTests(unittest.TestCase):
         self.assertEqual(settings["dns-direct-system"], "false")
         self.assertEqual(settings["dns-fallback-system"], "false")
         self.assertEqual(settings["dns-direct-fallback-proxy"], "false")
-        servers = settings["dns-server"].split(",") + settings["fallback-dns-server"].split(",")
-        self.assertIn("tls://223.5.5.5", servers)
-        for server in servers:
+        primary = settings["dns-server"].split(",")
+        self.assertEqual(set(primary), {
+            "https://223.5.5.5/dns-query", "https://120.53.53.53/dns-query",
+            "https://1.0.0.1/dns-query", "https://8.8.8.8/dns-query",
+        })
+        self.assertEqual(settings["fallback-dns-server"], "tls://223.5.5.5")
+        for server in primary + [settings["fallback-dns-server"]]:
             with self.subTest(server=server):
                 endpoint = urlsplit(server)
                 self.assertIn(endpoint.scheme, {"https", "tls"})
                 address = ip_address(endpoint.hostname)
                 self.assertIn(f"IP-CIDR,{address}/32,DIRECT,no-resolve\n", template)
+
+    def test_wechat_media_routes_precede_ads_and_proxy_fallback(self):
+        with TemporaryDirectory() as directory:
+            output = Path(directory)
+            build_public(ROOT, output)
+            rules = (output / "go1f-surf.conf").read_text(encoding="utf-8").splitlines()
+        for rule in (
+            "DOMAIN-SUFFIX,wechat.com,DIRECT", "DOMAIN-SUFFIX,qpic.cn,DIRECT",
+            "DOMAIN,up-hl.3g.qq.com,DIRECT", "DOMAIN,wxapp.tc.qq.com,DIRECT",
+            "DOMAIN,vweixinf.tc.qq.com,DIRECT", "DOMAIN,finder.video.qq.com,DIRECT",
+        ):
+            self.assertLess(rules.index(rule), rules.index("DOMAIN,ad.doubleclick.net,REJECT"))
+        self.assertLess(rules.index("IP-ASN,132203,DIRECT,no-resolve"), rules.index("FINAL,PROXY"))
+        self.assertIn("DOMAIN,gdt.qq.com,REJECT", rules)
 
     def test_splash_modules_match_ads_but_spare_business_paths(self):
         examples = {
@@ -77,6 +98,36 @@ class BuildTests(unittest.TestCase):
                 hosts = module.split("hostname = %APPEND% ", 1)[1].strip().split(",")
                 self.assertIn(blocked.split("/", 1)[0], hosts)
                 self.assertNotIn("[Script]", module)
+
+    def test_douban_module_covers_ad_paths_without_rewriting_normal_content(self):
+        module = (ROOT / "modules/splash-douban.srmodule").read_text(encoding="utf-8")
+        rewrites = [re.compile(line.split()[0]) for line in module.splitlines() if line.startswith("^")]
+        hosts = module.split("hostname = %APPEND% ", 1)[1].strip().split(",")
+        for url in (
+            "https://api.douban.com/v3/app_ads?version=3",
+            "http://api.douban.com/v2/app_ads/splash",
+            "https://api.douban.com/beta/common_ads?place=1",
+            "https://frodo.douban.com/api/v2/movie/banner?version=2",
+            "https://img9.doubanio.com/view/dale-online/dale_ad/asset.jpg",
+            f"https://storage.360buyimg.com/material-video/video/{'a' * 32}.mp4?token=fixture",
+        ):
+            with self.subTest(url=url):
+                self.assertTrue(any(pattern.match(url) for pattern in rewrites))
+                self.assertIn(urlsplit(url).hostname, hosts)
+        for url in (
+            "https://api.douban.com/v2/book/123",
+            "https://api.douban.com/v2/app_ads_settings",
+            "https://frodo.douban.com/api/v2/movie/123",
+            "https://img9.doubanio.com/view/photo/s/public/asset.jpg",
+            "https://storage.360buyimg.com/other/clip.mp4",
+        ):
+            with self.subTest(url=url):
+                self.assertFalse(any(pattern.match(url) for pattern in rewrites))
+        quic_rules = [line for line in module.splitlines() if "(PROTOCOL,QUIC)" in line]
+        self.assertEqual(quic_rules, [
+            f"AND,((DOMAIN,{host}),(PROTOCOL,QUIC)),REJECT-NO-DROP"
+            for host in ("api.douban.com", "frodo.douban.com")
+        ])
 
 
 if __name__ == "__main__":

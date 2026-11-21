@@ -10,11 +10,11 @@ DOMAIN = re.compile(r"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}")
 
 def read_ad_rules(path, template):
     protected = []
-    for line in template.splitlines():
+    for line in template.partition("{{AD_RULES}}")[0].splitlines():
         fields = line.split(",")
         if len(fields) == 3 and fields[0] in {"DOMAIN", "DOMAIN-SUFFIX"}:
             kind, domain, policy = fields
-            if policy == "PROXY" or (policy == "DIRECT" and kind == "DOMAIN"):
+            if policy in {"PROXY", "DIRECT"}:
                 protected.append((kind, domain))
 
     rules = []

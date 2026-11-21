@@ -1,8 +1,17 @@
 #!name=豆瓣开屏增强
-#!desc=仅处理豆瓣 App 的开屏广告接口，需启用 HTTPS 解密。
+#!desc=拦截豆瓣开屏下发、广告位与已知广告素材，需启用 HTTPS 解密。
+
+[Rule]
+# 只限制两个豆瓣 API 的 QUIC，便于客户端回落到可重写的 HTTPS/TCP。
+AND,((DOMAIN,api.douban.com),(PROTOCOL,QUIC)),REJECT-NO-DROP
+AND,((DOMAIN,frodo.douban.com),(PROTOCOL,QUIC)),REJECT-NO-DROP
 
 [URL Rewrite]
-^https://api\.douban\.com/v2/app_ads/splash(?:[/?]|$) - reject-dict
+^https?://api\.douban\.com/v[0-9]+/app_ads(?:[/?]|$) - reject-dict
+^https?://api\.douban\.com/(?:[^/?]+/)*common_ads(?:[/?]|$) - reject-dict
+^https?://frodo\.douban\.com/api/v[0-9]+/movie/banner(?:[/?]|$) - reject-dict
+^https?://img[1239]\.doubanio\.com/view/dale-online/dale_ad/ - reject-img
+^https?://storage\.360buyimg\.com/material-video/video/[0-9a-f]{32}\.mp4(?:\?|$) - reject
 
 [MITM]
-hostname = %APPEND% api.douban.com
+hostname = %APPEND% api.douban.com,frodo.douban.com,img1.doubanio.com,img2.doubanio.com,img3.doubanio.com,img9.doubanio.com,storage.360buyimg.com
