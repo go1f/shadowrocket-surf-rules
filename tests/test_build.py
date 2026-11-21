@@ -9,31 +9,25 @@ from scripts.build import build_public, read_ad_rules
 
 
 ROOT = Path(__file__).resolve().parents[1]
-REPOSITORY = "example/shadowrocket-surf-rules"
-PUBLIC_RULE_URL = f"https://raw.githubusercontent.com/{REPOSITORY}/release/ads.list"
 
 
 class BuildTests(unittest.TestCase):
-    def test_public_build_uses_remote_rules_and_embeds_offline_copy(self):
+    def test_public_build_embeds_rules_in_one_named_config(self):
         with TemporaryDirectory() as directory:
             output = Path(directory)
-            build_public(ROOT, output, REPOSITORY)
-            online = (output / "surf.conf").read_text(encoding="utf-8")
-            offline = (output / "surf-offline.conf").read_text(encoding="utf-8")
+            build_public(ROOT, output)
+            self.assertEqual([path.name for path in output.glob("*.conf")], ["go1f-surf.conf"])
+            config = (output / "go1f-surf.conf").read_text(encoding="utf-8")
             ads = (output / "ads.list").read_text(encoding="utf-8").splitlines()
-            self.assertLess(online.index("DOMAIN-SUFFIX,chatgpt.com,PROXY"), online.index(PUBLIC_RULE_URL))
-            self.assertLess(online.index(PUBLIC_RULE_URL), online.index("DOMAIN-SUFFIX,cn,DIRECT"))
             self.assertEqual(len(ads), len(set(ads)))
-            self.assertTrue(all(f"{rule},REJECT" in offline for rule in ads))
-            self.assertNotIn("RULE-SET,", offline)
-            for config in (online, offline):
-                self.assertIn("FINAL,PROXY\n", config)
-                self.assertLess(config.index("DOMAIN,dns-detect.alicdn.com,PROXY"), config.index("DOMAIN-SUFFIX,alicdn.com,DIRECT"))
-                self.assertNotIn("[Proxy Group]", config)
-                self.assertNotIn("[Proxy]", config)
-                self.assertNotIn("{{", config)
-                self.assertNotIn("[MITM]", config)
-                self.assertNotIn("[Script]", config)
+            for rule in ads:
+                position = config.index(f"{rule},REJECT\n")
+                self.assertLess(config.index("DOMAIN-SUFFIX,chatgpt.com,PROXY"), position)
+                self.assertLess(position, config.index("DOMAIN-SUFFIX,cn,DIRECT"))
+            self.assertIn("FINAL,PROXY\n", config)
+            self.assertLess(config.index("DOMAIN,dns-detect.alicdn.com,PROXY"), config.index("DOMAIN-SUFFIX,alicdn.com,DIRECT"))
+            for marker in ("RULE-SET,", "[Proxy Group]", "[Proxy]", "{{", "[MITM]", "[Script]"):
+                self.assertNotIn(marker, config)
             self.assertEqual(len(list((output / "modules").glob("*.srmodule"))), 6)
 
     def test_ad_rules_cannot_override_protected_hosts(self):

@@ -7,7 +7,7 @@ release_dir=$(mktemp -d)
 trap 'git worktree remove --force "$release_dir" >/dev/null 2>&1 || rmdir "$release_dir"' EXIT
 release_ref=refs/heads/release
 
-[[ -s dist/surf.conf && -s dist/surf-offline.conf && -s dist/ads.list ]]
+[[ -s dist/go1f-surf.conf && -s dist/ads.list ]]
 existing_release=$(git ls-remote origin "$release_ref")
 if [[ -n "$existing_release" ]]; then
     git fetch --no-tags origin "$release_ref"
@@ -19,7 +19,10 @@ else
 fi
 
 # Copy only documented public assets. The personal build directory is never read here.
-cp dist/surf.conf dist/surf-offline.conf dist/ads.list "$release_dir/"
+cp dist/go1f-surf.conf dist/ads.list "$release_dir/"
+# Keep existing import URLs working with the same configuration.
+cp dist/go1f-surf.conf "$release_dir/surf.conf"
+cp dist/go1f-surf.conf "$release_dir/surf-offline.conf"
 mkdir -p "$release_dir/modules"
 cp dist/modules/splash-*.srmodule "$release_dir/modules/"
 git -C "$release_dir" add --all

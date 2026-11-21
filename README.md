@@ -5,7 +5,7 @@
 ## 导入和选节点
 
 1. 在 Shadowrocket 首页更新自己的服务器订阅。需要筛选地区或名称时，打开该订阅的 `ⓘ → 过滤`，保存后刷新订阅。
-2. 在「配置」导入 [远程更新版](https://raw.githubusercontent.com/go1f/shadowrocket-surf-rules/release/surf.conf) 或 [内嵌广告规则版](https://raw.githubusercontent.com/go1f/shadowrocket-surf-rules/release/surf-offline.conf)，选择「使用配置」，并把「全局路由」设为「配置」。内嵌版也可以从本地文件导入。
+2. 在「配置」粘贴链接或导入下载好的文件，选择「使用配置」，并把「全局路由」设为「配置」。文件内已包含广告规则。 [go1f-surf.conf](https://raw.githubusercontent.com/go1f/shadowrocket-surf-rules/release/go1f-surf.conf)
 3. 在首页选择一个筛选后保留的节点。`PROXY` 使用首页当前节点，ChatGPT 和其他代理流量共用它。若要固定使用当前节点，在全局路由设置中关闭「启用回退」。节点地区以实际出口为准。
 
 常用国内服务和局域网直连，其余流量由 `FINAL,PROXY` 处理。加密 DNS 端点都使用 IP 地址，可以直接建立 TLS 连接。配置关闭系统 DNS 回退，覆盖 Shadowrocket 接管的 DNS 请求。代理服务端解析和 App 自带解析取决于各自的环境。
@@ -28,7 +28,7 @@
 ## 更新、构建和回滚
 
 - GitHub Actions 在 `main` 更新时、每周一北京时间 08:17，以及手动触发时，验证并发布已审核的规则。稳定地址位于 `release` 分支。相同内容跳过发布，验证失败保留上一版。
-- 在 Shadowrocket 更新远程广告规则可获取列表变更。主配置、内嵌版和模块的变更通过重新下载生效。配置文件和节点订阅分别管理。回滚可从同一个历史发布提交恢复整套文件，或使用该提交的内嵌版。
-- 本地运行 `python3 scripts/build.py` 生成带内嵌广告规则的 `dist/surf.conf`、`dist/surf-offline.conf`、独立广告表和模块。加 `--repository owner/repo` 可让 `surf.conf` 指向对应仓库的远程广告列表。运行 `python3 -m unittest discover -s tests -v` 进行离线测试。
+- 通过同一地址重新下载主配置即可获取 DNS 和广告规则的变更。开屏模块按需更新。回滚时从对应的历史发布提交下载配置和所需模块。
+- 本地运行 `python3 scripts/build.py` 生成 `dist/go1f-surf.conf` 和模块。运行 `python3 -m unittest discover -s tests -v` 进行离线测试。
 
 [概要设计](DESIGN.md)记录了调研和验收范围，本文为当前实现的使用说明。
