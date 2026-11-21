@@ -104,6 +104,11 @@ DOMAIN-SUFFIX,00cdn.com,DIRECT
 DOMAIN-SUFFIX,88cdn.com,DIRECT
 DOMAIN-SUFFIX,p2cdn.com,DIRECT
 
+# UC 服务与阿里云国内 CDN
+DOMAIN,puds.ucweb.com,DIRECT
+DOMAIN,x.so123.com,DIRECT
+DOMAIN,alibaba-cn-pvg-00001.oss-enet.aliyuncs.com,DIRECT
+
 DOMAIN-SUFFIX,cn,DIRECT
 DOMAIN-SUFFIX,bilibili.com,DIRECT
 DOMAIN-SUFFIX,biliapi.net,DIRECT

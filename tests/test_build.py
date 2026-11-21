@@ -31,6 +31,7 @@ class BuildTests(unittest.TestCase):
                 "testflight.apple.com", "developer.apple.com", "cvws.icloud-content.com", "apzones.com",
                 "chat.deepseek.com", "api.deepseek.com", "cdn.deepseek.com", "dl.xunlei.com",
                 "xunlei.net", "tracker.sandai.net", "thundercdn.com", "p2cdn.com",
+                "puds.ucweb.com", "x.so123.com", "alibaba-cn-pvg-00001.oss-enet.aliyuncs.com",
             ):
                 with self.subTest(host=host):
                     policy = next((policy for kind, domain, policy in domain_rules
