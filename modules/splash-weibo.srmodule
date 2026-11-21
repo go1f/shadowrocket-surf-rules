@@ -1,0 +1,8 @@
+#!name=微博开屏增强
+#!desc=处理微博主 App 的广告预载接口，需启用 HTTPS 解密。
+
+[URL Rewrite]
+^https://api\.weibo\.cn/[0-9]+/ad/preload(?:\?|$) - reject-dict
+
+[MITM]
+hostname = %APPEND% api.weibo.cn

@@ -1,0 +1,8 @@
+#!name=QQ 音乐开屏增强
+#!desc=拦截开屏图片资源路径，需启用 HTTPS 解密。
+
+[URL Rewrite]
+^https://y\.gtimg\.cn/music/common/upload/t_splash_info/ - reject-img
+
+[MITM]
+hostname = %APPEND% y.gtimg.cn

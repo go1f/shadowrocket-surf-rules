@@ -1,0 +1,36 @@
+# 哔哩哔哩广告接口
+DOMAIN,cm.ad.bilibili.com
+DOMAIN,cm.adcommon.bilibili.com
+
+# 微博广告 SDK 与广告素材
+DOMAIN,bootpreload.uve.weibo.com
+DOMAIN,sdkapp.uve.weibo.com
+DOMAIN,adimg.uve.weibo.com
+DOMAIN,click.uve.weibo.com
+
+# 网易云音乐广告素材
+DOMAIN,admusicpic.music.126.net
+DOMAIN,iadmusicmat.music.126.net
+DOMAIN,iadmusicmatvideo.music.126.net
+DOMAIN,iadmat.nosdn.127.net
+
+# QQ 音乐广告平台
+DOMAIN,tmead.y.qq.com
+
+# 高德地图广告接口
+DOMAIN,amap-aos-info-nogw.amap.com
+DOMAIN,optimus-ads.amap.com
+
+# 常见广告 SDK 和广告服务
+DOMAIN,ad.doubleclick.net
+DOMAIN,googleads.g.doubleclick.net
+DOMAIN,pagead2.googlesyndication.com
+DOMAIN,tpc.googlesyndication.com
+DOMAIN,securepubads.g.doubleclick.net
+DOMAIN,adservice.google.com
+DOMAIN,adashx.m.taobao.com
+DOMAIN,adashx4yt.m.taobao.com
+DOMAIN,gdt.qq.com
+DOMAIN,mi.gdt.qq.com
+DOMAIN,v.gdt.qq.com
+DOMAIN,sdk.e.qq.com

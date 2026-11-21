@@ -1,0 +1,8 @@
+#!name=豆瓣开屏增强
+#!desc=仅处理豆瓣 App 的开屏广告接口，需启用 HTTPS 解密。
+
+[URL Rewrite]
+^https://api\.douban\.com/v2/app_ads/splash(?:[/?]|$) - reject-dict
+
+[MITM]
+hostname = %APPEND% api.douban.com
