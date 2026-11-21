@@ -1,0 +1,8 @@
+#!name=网易云音乐开屏增强
+#!desc=处理独立广告投放路径，需启用 HTTPS 解密。
+
+[URL Rewrite]
+^https://interface[0-9]?\.music\.163\.com/(?:eapi|weapi|xeapi|api)/(?:ad|ocpc/ad)(?:[/?]|$) - reject-dict
+
+[MITM]
+hostname = %APPEND% interface.music.163.com,interface0.music.163.com,interface1.music.163.com,interface2.music.163.com,interface3.music.163.com,interface4.music.163.com,interface5.music.163.com,interface6.music.163.com,interface7.music.163.com,interface8.music.163.com,interface9.music.163.com

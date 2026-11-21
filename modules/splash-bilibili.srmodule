@@ -1,0 +1,8 @@
+#!name=哔哩哔哩开屏增强
+#!desc=仅处理 App 的开屏广告请求，需启用 HTTPS 解密。
+
+[URL Rewrite]
+^https://app\.bilibili\.com/x/v[0-9]+/splash/(?:list|show|brand/list|event/list2)(?:[/?]|$) - reject-dict
+
+[MITM]
+hostname = %APPEND% app.bilibili.com

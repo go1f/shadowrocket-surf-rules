@@ -1,0 +1,8 @@
+#!name=高德地图开屏增强
+#!desc=处理广告投放的启动请求，需启用 HTTPS 解密。
+
+[URL Rewrite]
+^https://m[0-9]\.amap\.com/ws/shield/dsp/app/startup/init(?:\?|$) - reject-dict
+
+[MITM]
+hostname = %APPEND% m0.amap.com,m1.amap.com,m2.amap.com,m3.amap.com,m4.amap.com,m5.amap.com,m6.amap.com,m7.amap.com,m8.amap.com,m9.amap.com
