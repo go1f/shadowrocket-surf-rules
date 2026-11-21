@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import json
 import re
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -9,9 +8,6 @@ from tempfile import NamedTemporaryFile
 ROOT = Path(__file__).resolve().parents[1]
 DOMAIN = re.compile(r"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}")
 REPOSITORY = re.compile(r"[a-zA-Z0-9][a-zA-Z0-9-]{0,38}/[a-zA-Z0-9_.-]+")
-EXCLUDED_REGION_LABEL = re.compile(r"香港|🇭🇰|hong[ -_]?kong|(?<![a-z])hk(?![a-z])", re.I)
-ALLOWED_REGIONS = {"JP", "SG", "US"}
-RESERVED_NODE_NAMES = {"chatgpt", "常规代理", "direct", "proxy", "tailscale", "select", "url-test", "fallback", "load-balance", "random"}
 
 
 def read_ad_rules(path, template):
@@ -20,7 +16,7 @@ def read_ad_rules(path, template):
         fields = line.split(",")
         if len(fields) == 3 and fields[0] in {"DOMAIN", "DOMAIN-SUFFIX"}:
             kind, domain, policy = fields
-            if policy == "ChatGPT" or (policy == "DIRECT" and kind == "DOMAIN"):
+            if policy == "PROXY" or (policy == "DIRECT" and kind == "DOMAIN"):
                 protected.append((kind, domain))
 
     rules = []
@@ -47,62 +43,23 @@ def read_ad_rules(path, template):
     return rules
 
 
-def select_nodes(profile):
-    if not isinstance(profile, dict) or set(profile) != {"exclude_labels", "verified_nodes"}:
-        raise ValueError("Private profile must contain exclude_labels and verified_nodes")
-    labels = profile["exclude_labels"]
-    nodes = profile["verified_nodes"]
-    if not isinstance(labels, list) or any(not isinstance(label, str) or not label.strip() for label in labels):
-        raise ValueError("Invalid private exclusion labels")
-    if not isinstance(nodes, list):
-        raise ValueError("verified_nodes must be a list")
-
-    eligible = []
-    seen = set()
-    for node in nodes:
-        if not isinstance(node, dict) or set(node) != {"name", "exit_region"}:
-            raise ValueError("Each private node requires name and exit_region")
-        name, region = node["name"], node["exit_region"]
-        if not isinstance(name, str) or not name or name != name.strip() or not name.isprintable():
-            raise ValueError("Invalid private node name")
-        if (
-            any(char in name for char in ",;=#[]{}")
-            or "://" in name
-            or name.upper().startswith("REJECT")
-            or name.casefold() in RESERVED_NODE_NAMES
-        ):
-            raise ValueError("A private node name contains a reserved token or delimiter")
-        if name.casefold() in seen:
-            raise ValueError("Duplicate private node name")
-        seen.add(name.casefold())
-        if not isinstance(region, str):
-            raise ValueError("Invalid exit_region")
-        if region in ALLOWED_REGIONS and not EXCLUDED_REGION_LABEL.search(name) and not any(
-            label.casefold() in name.casefold() for label in labels
-        ):
-            eligible.append(name)
-    return eligible
-
-
-def render_config(template, rules, repository=None, nodes=()):
+def render_config(template, rules, repository=None):
     if repository:
         if not REPOSITORY.fullmatch(repository) or repository.split("/")[1] in {".", ".."}:
             raise ValueError("Repository must use owner/repo format")
         ad_rules = f"RULE-SET,https://raw.githubusercontent.com/{repository}/release/ads.list,REJECT"
     else:
         ad_rules = "\n".join(f"{rule},REJECT" for rule in rules)
-    members = "".join("," + node for node in nodes)
-    return template.replace("{{PROXY_MEMBERS}}", members).replace("{{AD_RULES}}", ad_rules)
+    return template.replace("{{AD_RULES}}", ad_rules)
 
 
-def write_file(path, content, *, private=False):
+def write_file(path, content):
     path.parent.mkdir(parents=True, exist_ok=True)
     with NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent, delete=False) as temp:
         temp.write(content)
     temporary_path = Path(temp.name)
     try:
-        if not private:
-            temporary_path.chmod(0o644)
+        temporary_path.chmod(0o644)
         temporary_path.replace(path)
     finally:
         temporary_path.unlink(missing_ok=True)
@@ -125,25 +82,12 @@ def build_public(root, output, repository=None):
 def main():
     parser = argparse.ArgumentParser(description="Build Shadowrocket configuration files.")
     parser.add_argument("--repository", help="owner/repo for the remote ad rule set")
-    parser.add_argument("--personal", action="store_true", help="build only .private/surf.conf")
     args = parser.parse_args()
     try:
-        if args.personal:
-            try:
-                profile = json.loads((ROOT / ".private/profile.json").read_text(encoding="utf-8"))
-            except (OSError, UnicodeError, json.JSONDecodeError):
-                raise ValueError("Cannot read .private/profile.json") from None
-            nodes = select_nodes(profile)
-            template = (ROOT / "config/surf.conf.in").read_text(encoding="utf-8")
-            rules = read_ad_rules(ROOT / "rules/ads.list", template)
-            config = render_config(template, rules, args.repository, nodes)
-            write_file(ROOT / ".private/surf.conf", config, private=True)
-            print(f"Built .private/surf.conf with {len(nodes)} eligible nodes")
-        else:
-            build_public(ROOT, ROOT / "dist", args.repository)
-            print("Built public assets in dist/")
+        build_public(ROOT, ROOT / "dist", args.repository)
     except ValueError as error:
         parser.error(str(error))
+    print("Built public assets in dist/")
 
 
 if __name__ == "__main__":

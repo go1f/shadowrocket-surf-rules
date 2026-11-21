@@ -4,9 +4,9 @@
 
 ## 方案结论
 
-首版采用一份轻量主配置 `surf.conf` 和一个域名级广告规则集 `ads.list`。在 Shadowrocket 的「配置」路由模式下，受客户端接管的公网 DNS 查询使用 DoH，开屏广告优先拦截独立广告域名，常规代理和 ChatGPT 组都只从已核验的受支持地区出口中选节点。哔哩哔哩、微博、豆瓣、网易云音乐、QQ 音乐和高德地图各有一个可选开屏模块。
+主配置 `surf.conf` 和域名级广告规则集 `ads.list` 在 Shadowrocket 的「配置」路由模式下使用。受客户端接管的公网 DNS 查询采用加密解析，广告优先按域名拦截。代理流量使用首页选中的 `PROXY` 节点，节点地区和名称在设备端的服务器订阅中筛选。哔哩哔哩、微博、豆瓣、网易云音乐、QQ 音乐和高德地图各有一个可选开屏模块。
 
-配置订阅和节点订阅分别更新。个人 GitHub 仓库 `shadowrocket-surf-rules` 仅发布不含凭据的配置和规则，现有节点订阅由设备端的 Shadowrocket 单独管理。本次概设未访问该订阅，未采集节点样本。
+配置订阅和节点订阅分别更新。个人 GitHub 仓库 `shadowrocket-surf-rules` 仅发布公开配置和规则。设备端的 Shadowrocket 管理节点订阅及订阅过滤条件。
 
 ## 社区方案对比
 
@@ -17,6 +17,7 @@
 | [ithtelab / sr-adblock](https://github.com/ithtelab/sr-adblock) | 将域名拦截、可选 HTTPS 解密模块和主配置分开，展示了节点订阅与配置订阅独立的办法。 | 聚合域名和解密范围较大。其基础配置允许明文和系统 DNS，节点组按名称匹配。 | 借鉴分层和逐 App 模块，保留更小的默认范围。通过其产物了解配置语法，客户端行为以真机为准。 [示例主配置](https://raw.githubusercontent.com/ithtelab/sr-adblock/release/conf/base.conf) |
 | [blackmatrix7 / ios_rule_script](https://github.com/blackmatrix7/ios_rule_script/tree/master/rule/Shadowrocket/OpenAI) | 提供可直接阅读的 Shadowrocket 服务域名列表，适合做覆盖交叉检查。 | 服务域名、脚本和聚合数据的适用条件有差异，仓库另有资源使用声明，列表也会落后于服务变化。 | 以 OpenAI 官方资料为准，社区列表用于核对遗漏。 [上游说明](https://github.com/blackmatrix7/ios_rule_script) |
 | [AdGuard DNS Filter](https://github.com/AdguardTeam/AdGuardSDNSFilter) | 包含移动广告过滤来源，已针对 DNS 级阻断做简化。 | 完整列表超出首版预算，语法还包括白名单和修饰符，直接抽域名可能改变语义。 | 作为候选域名线索，经验证后再决定纳入方式。使用上游数据时按实际文件核对授权、来源和署名要求。 |
+| [iKuuu 供应商配置](https://ikuuu.org/iKuuu_V1_Config.conf) | IP 形式的阿里 DoT、国内及局域网直连、默认代理兜底。将 DNS 检测域名单独走代理，避免被国内域名规则先匹配。 | 配置明确指定系统 DNS 作为备用。部分宽泛的关键词规则和系统旁路会扩大直连范围。 | 采用 IP 直连的加密端点和默认 `PROXY`，补充共享地址段、本地组播、国内常用服务直连及 DNS 检测域名例外。所有备用端点均使用加密协议。 |
 
 ## 客户端设计
 
@@ -26,27 +27,21 @@
 
 | 顺序 | 匹配 | 动作 |
 | --- | --- | --- |
-| 1 | ChatGPT 和 OpenAI 核心服务域名 | 进入 `ChatGPT` 策略组，优先于所有广告规则 |
+| 1 | ChatGPT 和 OpenAI 核心服务域名、DNS 检测域名例外 | 进入内置 `PROXY`，优先于广告和直连规则 |
 | 2 | 开屏误杀例外、已确认的局域网目标 | 例外显式指定原本应使用的策略，局域网直连 |
 | 3 | 专用开屏广告域名、已验证的公共广告域名 | `REJECT`，从自托管 `ads.list` 加载 |
 | 4 | 常用国内服务域名、`.cn`，以及地址已知时适用的国内 IP 规则 | `DIRECT` |
-| 5 | 其他目的地 | `FINAL` 进入 `常规代理` |
+| 5 | 其他目的地 | `FINAL,PROXY` |
 
-核心域名基于 OpenAI 官方网络说明维护，覆盖认证、会话、静态资源和附件。共享第三方域名仅按实际依赖精确匹配。登录验证等经真机确认需要保持同一出口的主机加入 `ChatGPT` 组。共享支付、客服等域名可针对确切子域防误拦，保留其正常路由。使用 ChatGPT 的文本流式输出、附件、登录与 WebSocket 做回归验证。 [OpenAI 网络建议](https://help.openai.com/en/articles/9247338-network-recommendations-for-chatgpt-errors-on-web-and-apps)
+核心域名基于 OpenAI 官方网络说明维护，覆盖认证、会话、静态资源和附件。共享第三方域名按实际依赖精确匹配。使用 ChatGPT 的文本流式输出、附件、登录与 WebSocket 做回归验证。 [OpenAI 网络建议](https://help.openai.com/en/articles/9247338-network-recommendations-for-chatgpt-errors-on-web-and-apps)
 
 ### 默认出口地区
 
-默认约束覆盖 `ChatGPT` 和 `常规代理`。初始候选地区取日本、新加坡和美国，均在调研日的 OpenAI 支持名单中。香港未列入该名单。以后以官方名单与个人选定地区的交集确定候选范围。 [OpenAI 支持地区](https://help.openai.com/en/articles/7947663-chatgpt-and-openai-api-supported-countries-and-territories)
-
-1. **设备端先核验，再入组。** 核验的是通过该策略实际出去的公网 IP 和地区。节点名、旗帜、入口服务器位置和延迟测速只用来缩小候选范围。对地区冲突、未知地区或入口与出口混标的节点，先排除并单独核验。
-2. **首版用显式选择。** 两组各自只包含设备端已核验的节点。`ChatGPT` 默认固定一个出口，减少会话期间的变化。根据实际节点命名，后续可用 `policy-regex-filter` 辅助查找候选节点。宽泛的地区关键词无法约束实际出口，也不能证明当前供应商的命名方式。
-3. **无合格节点时明确不可用。** 两组均禁止回退到未筛选的节点或直连。实现先用虚构节点测试显式拒绝、订阅移除和节点改名后的行为。若客户端会替空组自动选其他节点，分发版的 ChatGPT 路由及代理兜底直接使用 `REJECT`，完成本机选组后再启用。订阅更新后重新验证发生变化的条目，完整配置更新后复核本机选组。
-
-IP 地理库可能有偏差。地区核验只能提高路由选择的准确性，服务可用性仍取决于 OpenAI 的实际判定。首版上线门槛是验证没有意外回落到香港、未知出口或 `DIRECT`。
+Shadowrocket 的 `PROXY` 使用首页当前节点。使用者在自己的服务器订阅里设置正则，按节点备注中的地区标识筛选，再核验所选节点的实际出口。供应商入口、旗帜或备注只能作为候选线索。节点因订阅刷新而消失或改名时，在同一条订阅里重新选择。需要固定路由时，关闭 Shadowrocket 的全局代理回退。 [OpenAI 支持地区](https://help.openai.com/en/articles/7947663-chatgpt-and-openai-api-supported-countries-and-territories)
 
 ### DNS 加密
 
-首版主用阿里公共 DNS `https://dns.alidns.com/dns-query`，备用腾讯 DNSPod `https://doh.pub/dns-query` 和 Cloudflare `https://cloudflare-dns.com/dns-query`。允许 `DIRECT` 的公网业务仍应使用 DoH。两条备用端点的调用顺序和故障表现待 Wi-Fi 与蜂窝网实测。 [阿里公共 DNS](https://alidns.com/) · [腾讯 DNSPod](https://cloud.tencent.com/document/product/302/110786) · [Cloudflare DoH](https://developers.cloudflare.com/1.1.1.1/encryption/dns-over-https/make-api-requests/)
+主用阿里公共 DNS `https://223.5.5.5/dns-query`，备用阿里 `tls://223.5.5.5` 和腾讯 DNSPod `https://120.53.53.53/dns-query`。端点用 IP 直接连接，DoH 冷启动无需先为解析器查询域名。两家服务的 IP 证书与 DNS 应答已在开发环境验证。允许 `DIRECT` 的公网业务仍由客户端配置的加密 DNS 解析。备用端点的实际调用顺序和故障表现待 Wi-Fi 与蜂窝网实测。 [阿里公共 DNS](https://alidns.com/) · [腾讯 DNSPod](https://cloud.tencent.com/document/product/302/110786)
 
 主配置应关闭系统 DNS 和明文备用解析。优先验证 DoH 引导、节点域名解析和代理侧解析。如果解析器需要经代理才能连通，先验证隧道启动时能否在无循环依赖的情况下建立 DoH。分别在本地接口观察冷启动、直连、代理、IPv6 切换和故障时的 TCP/UDP 53 请求。若该客户端版本有无法关闭的明文行为，记录具体触发条件，按实测结果决定是否达到发布条件。 [Shadowrocket App Store 能力与版本记录](https://apps.apple.com/us/app/shadowrocket/id932747118)
 
@@ -80,8 +75,8 @@ IP 地理库可能有偏差。地区核验只能提高路由选择的准确性�
 
 | 阶段 | 交付与验收 |
 | --- | --- |
-| 1. 客户端最小验证 | 用最小 `.conf` 和虚构节点验证规则顺序、远程规则导入、空组拒绝、改名和移除后行为。Wi-Fi 与蜂窝分别核验 DoH 对直连和代理业务的影响，验证冷启动和 DNS 故障时的回退。 |
-| 2. 个性化首版 | 核验六个目标 App 的专用开屏域名和可选模块。核验日本、新加坡、美国候选样本及香港、歧义标签的排除路径。通过 ChatGPT 登录、文本流式输出和附件，以及目标 App 登录、内容、消息与支付等相关功能回归。记录每个 App 的开屏拦截结果与仍出现广告的情况。 |
+| 1. 客户端最小验证 | 用默认 `PROXY` 验证规则顺序、远程规则导入和节点订阅刷新。Wi-Fi 与蜂窝分别检查直连和代理业务，验证冷启动、DoT 备用和故障时是否出现系统 DNS 请求。 |
+| 2. 个性化首版 | 核验六个目标 App 的专用开屏域名和可选模块。使用虚构节点测试订阅筛选，在设备上核验已选节点的实际出口。通过 ChatGPT 登录、文本流式输出和附件，以及目标 App 登录、内容、消息与支付等相关功能回归。记录开屏拦截结果。 |
 | 3. GitHub 发布 | 在个人账号创建 `shadowrocket-surf-rules` 并发布。用固定链接做首次导入、规则更新和回滚测试，确认独立节点订阅更新、规则集变更和完整配置升级之间的关系。 |
 | 4. 按需增强 | 对仍有开屏广告的高优先级 App 单独评估可选模块，并验证关闭该模块可恢复原行为。 |
 

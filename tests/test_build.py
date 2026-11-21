@@ -1,9 +1,11 @@
 import re
 import unittest
+from ipaddress import ip_address
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from urllib.parse import urlsplit
 
-from scripts.build import build_public, read_ad_rules, render_config, select_nodes
+from scripts.build import build_public, read_ad_rules
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -19,56 +21,46 @@ class BuildTests(unittest.TestCase):
             online = (output / "surf.conf").read_text(encoding="utf-8")
             offline = (output / "surf-offline.conf").read_text(encoding="utf-8")
             ads = (output / "ads.list").read_text(encoding="utf-8").splitlines()
-            self.assertLess(online.index("DOMAIN-SUFFIX,chatgpt.com,ChatGPT"), online.index(PUBLIC_RULE_URL))
+            self.assertLess(online.index("DOMAIN-SUFFIX,chatgpt.com,PROXY"), online.index(PUBLIC_RULE_URL))
             self.assertLess(online.index(PUBLIC_RULE_URL), online.index("DOMAIN-SUFFIX,cn,DIRECT"))
             self.assertEqual(len(ads), len(set(ads)))
             self.assertTrue(all(f"{rule},REJECT" in offline for rule in ads))
             self.assertNotIn("RULE-SET,", offline)
             for config in (online, offline):
-                self.assertIn("ChatGPT = select,REJECT\n", config)
-                self.assertIn("常规代理 = select,REJECT\n", config)
+                self.assertIn("FINAL,PROXY\n", config)
+                self.assertLess(config.index("DOMAIN,dns-detect.alicdn.com,PROXY"), config.index("DOMAIN-SUFFIX,alicdn.com,DIRECT"))
+                self.assertNotIn("[Proxy Group]", config)
+                self.assertNotIn("[Proxy]", config)
                 self.assertNotIn("{{", config)
                 self.assertNotIn("[MITM]", config)
                 self.assertNotIn("[Script]", config)
-                self.assertIn("dns-server = https://dns.alidns.com/dns-query\n", config)
-                self.assertIn("fallback-dns-server = https://doh.pub/dns-query,", config)
-                self.assertIn("dns-direct-system = false\n", config)
-                self.assertIn("dns-fallback-system = false\n", config)
             self.assertEqual(len(list((output / "modules").glob("*.srmodule"))), 6)
 
     def test_ad_rules_cannot_override_protected_hosts(self):
         template = (ROOT / "config/surf.conf.in").read_text(encoding="utf-8")
         with TemporaryDirectory() as directory:
             path = Path(directory) / "ads.list"
-            for rule in ("DOMAIN,ws.chatgpt.com", "DOMAIN-SUFFIX,cloudflare.com", "DOMAIN,doh.pub"):
+            for rule in ("DOMAIN,ws.chatgpt.com", "DOMAIN-SUFFIX,cloudflare.com", "DOMAIN,captive.apple.com"):
                 with self.subTest(rule=rule):
                     path.write_text(rule, encoding="utf-8")
                     with self.assertRaisesRegex(ValueError, "overlaps a protected host"):
                         read_ad_rules(path, template)
 
-    def test_private_filters_both_policies_and_never_adds_public_fallback(self):
-        profile = {
-            "exclude_labels": ["Trial"],
-            "verified_nodes": [
-                {"name": "JP 01", "exit_region": "JP"},
-                {"name": "SG trial preview", "exit_region": "SG"},
-                {"name": "HK 01", "exit_region": "HK"},
-                {"name": "🇭🇰 JP 02", "exit_region": "JP"},
-                {"name": "US unknown", "exit_region": "UNKNOWN"},
-            ],
-        }
-        self.assertEqual(select_nodes(profile), ["JP 01"])
+    def test_dns_endpoints_are_encrypted_and_need_no_host_lookup(self):
         template = (ROOT / "config/surf.conf.in").read_text(encoding="utf-8")
-        config = render_config(template, ["DOMAIN,ads.example.com"], nodes=select_nodes(profile))
-        self.assertIn("ChatGPT = select,REJECT,JP 01\n", config)
-        self.assertIn("常规代理 = select,REJECT,JP 01\n", config)
-        self.assertNotIn("FINAL,PROXY", config)
-
-    def test_private_name_cannot_inject_a_policy_or_url(self):
-        for name in ("DIRECT", "PROXY", "REJECT", "JP,PROXY", "https://example.com/token", "JP\nFINAL,DIRECT"):
-            with self.subTest(name=name):
-                with self.assertRaises(ValueError):
-                    select_nodes({"exclude_labels": [], "verified_nodes": [{"name": name, "exit_region": "JP"}]})
+        general = template.split("[General]\n", 1)[1].split("[Rule]", 1)[0]
+        settings = dict(line.split(" = ", 1) for line in general.splitlines() if " = " in line)
+        self.assertEqual(settings["dns-direct-system"], "false")
+        self.assertEqual(settings["dns-fallback-system"], "false")
+        self.assertEqual(settings["dns-direct-fallback-proxy"], "false")
+        servers = settings["dns-server"].split(",") + settings["fallback-dns-server"].split(",")
+        self.assertIn("tls://223.5.5.5", servers)
+        for server in servers:
+            with self.subTest(server=server):
+                endpoint = urlsplit(server)
+                self.assertIn(endpoint.scheme, {"https", "tls"})
+                address = ip_address(endpoint.hostname)
+                self.assertIn(f"IP-CIDR,{address}/32,DIRECT,no-resolve\n", template)
 
     def test_splash_modules_match_ads_but_spare_business_paths(self):
         examples = {
