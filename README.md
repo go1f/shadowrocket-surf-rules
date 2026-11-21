@@ -12,7 +12,7 @@
 
 微信图片上传、图片 CDN 和朋友圈视频的已知域名优先直连。直接连接腾讯全球网络 `AS132203` 的流量也可命中直连，匹配时使用连接已有的目标 IP。
 
-Apple Music 播放、iCloud 同步、Apple 下载 CDN、美团、百度、知乎和常用国内视频服务按域名直连。App Store 商店入口、TestFlight 和 Apple 开发服务按专用规则代理。局域网设备发现的 mDNS 组播由本地网络处理。 [Apple Music 域名参考](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Shadowrocket/AppleMusic/AppleMusic.list) · [iKuuu 参考配置](https://ikuuu.org/iKuuu_V1_Config.conf)
+App Store、Apple Music、iCloud、TestFlight、DeepSeek 网页和 API、迅雷业务域名和常用下载 CDN 均走直连。目标已知的 Apple `17.0.0.0/8` 连接也走直连。局域网设备发现的 mDNS 组播由本地网络处理。 [Apple 网络说明](https://support.apple.com/en-euro/101555) · [DeepSeek API](https://api-docs.deepseek.com/api/responses) · [迅雷域名参考](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Shadowrocket/Xunlei/Xunlei.list)
 
 ## 六个 App 的开屏增强
 

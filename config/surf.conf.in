@@ -42,13 +42,6 @@ DOMAIN,audio-ssl.itunes.apple.com,DIRECT
 DOMAIN,mvod.itunes.apple.com,DIRECT
 DOMAIN,streamingaudio.itunes.apple.com,DIRECT
 
-# 商店和开发服务的代理例外，优先于下方的 Apple 直连。
-DOMAIN,developer.apple.com,PROXY
-DOMAIN,testflight.apple.com,PROXY
-DOMAIN-SUFFIX,apps.apple.com,PROXY
-DOMAIN-SUFFIX,itunes.apple.com,PROXY
-DOMAIN,cvws.icloud-content.com,PROXY
-
 # 加密 DNS、局域网和 iOS 强制门户探测
 IP-CIDR,223.5.5.5/32,DIRECT,no-resolve
 IP-CIDR,120.53.53.53/32,DIRECT,no-resolve
@@ -85,15 +78,31 @@ DOMAIN,finder.video.qq.com,DIRECT
 # 广告拦截优先于常用国内域名直连
 {{AD_RULES}}
 
-# Apple 同步、下载 CDN 与系统服务
+# App Store、iCloud、Apple 下载 CDN 与系统服务
 DOMAIN-SUFFIX,icloud.com,DIRECT
 DOMAIN-SUFFIX,icloud-content.com,DIRECT
+DOMAIN-SUFFIX,apzones.com,DIRECT
+DOMAIN-SUFFIX,apple-dns.net,DIRECT
+DOMAIN-SUFFIX,apple-livephotoskit.com,DIRECT
 DOMAIN-SUFFIX,mzstatic.com,DIRECT
 DOMAIN-SUFFIX,cdn-apple.com,DIRECT
 DOMAIN-SUFFIX,aaplimg.com,DIRECT
 DOMAIN-SUFFIX,apple-cloudkit.com,DIRECT
 DOMAIN-SUFFIX,apple-mapkit.com,DIRECT
 DOMAIN-SUFFIX,apple.com,DIRECT
+IP-CIDR,17.0.0.0/8,DIRECT,no-resolve
+
+# DeepSeek 和迅雷业务域名及下载 CDN
+DOMAIN-SUFFIX,deepseek.com,DIRECT
+DOMAIN-SUFFIX,xunlei.com,DIRECT
+DOMAIN-SUFFIX,xunlei.net,DIRECT
+DOMAIN-SUFFIX,sandai.net,DIRECT
+DOMAIN-SUFFIX,xlpan.com,DIRECT
+DOMAIN-SUFFIX,thundercdn.com,DIRECT
+DOMAIN-SUFFIX,thunderurl.com,DIRECT
+DOMAIN-SUFFIX,00cdn.com,DIRECT
+DOMAIN-SUFFIX,88cdn.com,DIRECT
+DOMAIN-SUFFIX,p2cdn.com,DIRECT
 
 DOMAIN-SUFFIX,cn,DIRECT
 DOMAIN-SUFFIX,bilibili.com,DIRECT

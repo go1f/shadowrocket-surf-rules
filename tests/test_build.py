@@ -25,12 +25,18 @@ class BuildTests(unittest.TestCase):
                 self.assertLess(config.index("DOMAIN-SUFFIX,chatgpt.com,PROXY"), position)
                 self.assertLess(position, config.index("DOMAIN-SUFFIX,cn,DIRECT"))
             self.assertIn("FINAL,PROXY\n", config)
-            self.assertLess(config.index("DOMAIN,testflight.apple.com,PROXY"), config.index("DOMAIN-SUFFIX,apple.com,DIRECT"))
-            itunes_proxy = config.index("DOMAIN-SUFFIX,itunes.apple.com,PROXY")
-            for host in ("aod", "aod-ssl", "audio", "audio-ssl", "mvod", "streamingaudio"):
-                self.assertLess(config.index(f"DOMAIN,{host}.itunes.apple.com,DIRECT"), itunes_proxy)
-            self.assertIn("DOMAIN-SUFFIX,music.apple.com,DIRECT", config)
-            self.assertLess(config.index("DOMAIN,cvws.icloud-content.com,PROXY"), config.index("DOMAIN-SUFFIX,icloud-content.com,DIRECT"))
+            domain_rules = [line.split(",") for line in config.splitlines() if line.startswith(("DOMAIN,", "DOMAIN-SUFFIX,"))]
+            for host in (
+                "apps.apple.com", "buy.itunes.apple.com", "audio-ssl.itunes.apple.com", "music.apple.com",
+                "testflight.apple.com", "developer.apple.com", "cvws.icloud-content.com", "apzones.com",
+                "chat.deepseek.com", "api.deepseek.com", "cdn.deepseek.com", "dl.xunlei.com",
+                "xunlei.net", "tracker.sandai.net", "thundercdn.com", "p2cdn.com",
+            ):
+                with self.subTest(host=host):
+                    policy = next((policy for kind, domain, policy in domain_rules
+                                   if host == domain or (kind == "DOMAIN-SUFFIX" and host.endswith("." + domain))), "PROXY")
+                    self.assertEqual(policy, "DIRECT")
+            self.assertLess(config.index("IP-CIDR,17.0.0.0/8,DIRECT,no-resolve"), config.index("FINAL,PROXY"))
             for domain in ("mzstatic.com", "baidu.com", "meituan.net", "zhimg.com", "qiyipic.com"):
                 self.assertLess(config.index(f"DOMAIN-SUFFIX,{domain},DIRECT"), config.index("FINAL,PROXY"))
             self.assertLess(config.index("DOMAIN,dns-detect.alicdn.com,PROXY"), config.index("DOMAIN-SUFFIX,alicdn.com,DIRECT"))
