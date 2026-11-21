@@ -1,6 +1,6 @@
 # Shadowrocket Surf Rules
 
-适用于 iOS Shadowrocket 的轻量配置。主解析使用阿里公共 DNS、腾讯 DNSPod、Cloudflare 和 Google Public DNS 的 DoH，阿里 IP 直连 DoT 只用于备用。主配置包含 25 条广告域名规则，另有哔哩哔哩、微博、豆瓣、网易云音乐、QQ 音乐、高德地图开屏增强。
+适用于 iOS Shadowrocket 的轻量配置。主解析使用阿里公共 DNS 和腾讯 DNSPod 的 DoH，备用使用 Cloudflare 和 Google 的 DoH 以及阿里 IP 直连 DoT。主配置包含 25 条广告域名规则，另有哔哩哔哩、微博、豆瓣、网易云音乐、QQ 音乐、高德地图开屏增强。
 
 ## 导入和选节点
 
@@ -11,6 +11,8 @@
 常用国内服务和局域网直连，其余流量由 `FINAL,PROXY` 处理。加密 DNS 端点都使用 IP 地址，可以直接建立 TLS 连接。配置关闭系统 DNS 回退，覆盖 Shadowrocket 接管的 DNS 请求。代理服务端解析和 App 自带解析取决于各自的环境。
 
 微信图片上传、图片 CDN 和朋友圈视频的已知域名优先直连。直接连接腾讯全球网络 `AS132203` 的流量也可命中直连，匹配时使用连接已有的目标 IP。
+
+iCloud 同步、Apple 下载 CDN、美团、百度、知乎和常用国内视频服务按域名直连。App Store 商店入口、TestFlight 和 Apple 开发服务按专用规则代理。局域网设备发现的 mDNS 组播由本地网络处理。 [iKuuu 参考配置](https://ikuuu.org/iKuuu_V1_Config.conf)
 
 ## 六个 App 的开屏增强
 

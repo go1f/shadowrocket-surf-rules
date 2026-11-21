@@ -41,7 +41,7 @@ Shadowrocket 的 `PROXY` 使用首页当前节点。使用者在自己的服务�
 
 ### DNS 加密
 
-主解析选择阿里公共 DNS、腾讯 DNSPod、Cloudflare 和 Google Public DNS 的 DoH，阿里 `tls://223.5.5.5` 仅作备用。端点用 IP 直接连接，DoH 冷启动无需先为解析器查询域名。四个 DoH 端点的 IP 证书与 DNS 应答已在开发环境验证。允许 `DIRECT` 的公网业务仍由客户端配置的加密 DNS 解析。不同网络下的解析选择与故障表现待 Wi-Fi 和蜂窝网实测。 [阿里公共 DNS](https://alidns.com/) · [腾讯 DNSPod](https://cloud.tencent.com/document/product/302/110786) · [Cloudflare DNS](https://developers.cloudflare.com/1.1.1.1/ip-addresses/) · [Google Public DNS](https://developers.google.com/speed/public-dns/docs/doh)
+主解析选择阿里公共 DNS 和腾讯 DNSPod 的 DoH，备用提供 Cloudflare 和 Google Public DNS 的 DoH，以及阿里 `tls://223.5.5.5`。端点用 IP 直接连接，DoH 冷启动无需先为解析器查询域名。四个 DoH 端点的 IP 证书与 DNS 应答已在开发环境验证。允许 `DIRECT` 的公网业务仍由客户端配置的加密 DNS 解析。不同网络下的解析选择与故障表现待 Wi-Fi 和蜂窝网实测。 [阿里公共 DNS](https://alidns.com/) · [腾讯 DNSPod](https://cloud.tencent.com/document/product/302/110786) · [Cloudflare DNS](https://developers.cloudflare.com/1.1.1.1/ip-addresses/) · [Google Public DNS](https://developers.google.com/speed/public-dns/docs/doh)
 
 主配置应关闭系统 DNS 和明文备用解析。优先验证 DoH 引导、节点域名解析和代理侧解析。如果解析器需要经代理才能连通，先验证隧道启动时能否在无循环依赖的情况下建立 DoH。分别在本地接口观察冷启动、直连、代理、IPv6 切换和故障时的 TCP/UDP 53 请求。若该客户端版本有无法关闭的明文行为，记录具体触发条件，按实测结果决定是否达到发布条件。 [Shadowrocket App Store 能力与版本记录](https://apps.apple.com/us/app/shadowrocket/id932747118)
 

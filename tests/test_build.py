@@ -25,6 +25,10 @@ class BuildTests(unittest.TestCase):
                 self.assertLess(config.index("DOMAIN-SUFFIX,chatgpt.com,PROXY"), position)
                 self.assertLess(position, config.index("DOMAIN-SUFFIX,cn,DIRECT"))
             self.assertIn("FINAL,PROXY\n", config)
+            self.assertLess(config.index("DOMAIN,testflight.apple.com,PROXY"), config.index("DOMAIN-SUFFIX,apple.com,DIRECT"))
+            self.assertLess(config.index("DOMAIN,cvws.icloud-content.com,PROXY"), config.index("DOMAIN-SUFFIX,icloud-content.com,DIRECT"))
+            for domain in ("mzstatic.com", "baidu.com", "meituan.net", "zhimg.com", "qiyipic.com"):
+                self.assertLess(config.index(f"DOMAIN-SUFFIX,{domain},DIRECT"), config.index("FINAL,PROXY"))
             self.assertLess(config.index("DOMAIN,dns-detect.alicdn.com,PROXY"), config.index("DOMAIN-SUFFIX,alicdn.com,DIRECT"))
             for marker in ("RULE-SET,", "[Proxy Group]", "[Proxy]", "{{", "[MITM]", "[Script]"):
                 self.assertNotIn(marker, config)
@@ -51,12 +55,15 @@ class BuildTests(unittest.TestCase):
         self.assertEqual(settings["dns-fallback-system"], "false")
         self.assertEqual(settings["dns-direct-fallback-proxy"], "false")
         primary = settings["dns-server"].split(",")
+        fallback = settings["fallback-dns-server"].split(",")
         self.assertEqual(set(primary), {
             "https://223.5.5.5/dns-query", "https://120.53.53.53/dns-query",
-            "https://1.0.0.1/dns-query", "https://8.8.8.8/dns-query",
         })
-        self.assertEqual(settings["fallback-dns-server"], "tls://223.5.5.5")
-        for server in primary + [settings["fallback-dns-server"]]:
+        self.assertEqual(set(fallback), {
+            "https://1.0.0.1/dns-query", "https://8.8.8.8/dns-query", "tls://223.5.5.5",
+        })
+        self.assertEqual(settings["tun-excluded-routes"].split(","), ["224.0.0.251/32", "ff02::fb/128"])
+        for server in primary + fallback:
             with self.subTest(server=server):
                 endpoint = urlsplit(server)
                 self.assertIn(endpoint.scheme, {"https", "tls"})
