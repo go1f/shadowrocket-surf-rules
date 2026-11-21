@@ -32,6 +32,16 @@ DOMAIN,setup.workos.com,PROXY
 DOMAIN,workos.imgix.net,PROXY
 DOMAIN,dns-detect.alicdn.com,PROXY
 
+# Apple Music 播放和媒体域名优先直连。
+DOMAIN-SUFFIX,music.apple.com,DIRECT
+DOMAIN-SUFFIX,applemusic.com,DIRECT
+DOMAIN,aod.itunes.apple.com,DIRECT
+DOMAIN,aod-ssl.itunes.apple.com,DIRECT
+DOMAIN,audio.itunes.apple.com,DIRECT
+DOMAIN,audio-ssl.itunes.apple.com,DIRECT
+DOMAIN,mvod.itunes.apple.com,DIRECT
+DOMAIN,streamingaudio.itunes.apple.com,DIRECT
+
 # 商店和开发服务的代理例外，优先于下方的 Apple 直连。
 DOMAIN,developer.apple.com,PROXY
 DOMAIN,testflight.apple.com,PROXY

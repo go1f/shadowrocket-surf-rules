@@ -26,6 +26,10 @@ class BuildTests(unittest.TestCase):
                 self.assertLess(position, config.index("DOMAIN-SUFFIX,cn,DIRECT"))
             self.assertIn("FINAL,PROXY\n", config)
             self.assertLess(config.index("DOMAIN,testflight.apple.com,PROXY"), config.index("DOMAIN-SUFFIX,apple.com,DIRECT"))
+            itunes_proxy = config.index("DOMAIN-SUFFIX,itunes.apple.com,PROXY")
+            for host in ("aod", "aod-ssl", "audio", "audio-ssl", "mvod", "streamingaudio"):
+                self.assertLess(config.index(f"DOMAIN,{host}.itunes.apple.com,DIRECT"), itunes_proxy)
+            self.assertIn("DOMAIN-SUFFIX,music.apple.com,DIRECT", config)
             self.assertLess(config.index("DOMAIN,cvws.icloud-content.com,PROXY"), config.index("DOMAIN-SUFFIX,icloud-content.com,DIRECT"))
             for domain in ("mzstatic.com", "baidu.com", "meituan.net", "zhimg.com", "qiyipic.com"):
                 self.assertLess(config.index(f"DOMAIN-SUFFIX,{domain},DIRECT"), config.index("FINAL,PROXY"))
