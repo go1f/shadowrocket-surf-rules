@@ -12,6 +12,8 @@
 
 微信图片上传、图片 CDN 和朋友圈视频的已知域名优先直连。直接连接腾讯全球网络 `AS132203` 的流量也可命中直连，匹配时使用连接已有的目标 IP。
 
+阿里云、腾讯云和百度智能云的公共服务域名按后缀直连，覆盖这些域名下的海外节点。飞书 Rooms 的文件、会议域名和信令直连，两条新增的校时规则仅匹配对应主机的 UDP 123。 [阿里云 OSS 端点](https://help.aliyun.com/en/oss/user-guide/regions-and-endpoints) · [飞书 Rooms 网络清单](https://www.feishu.cn/hc/en-US/articles/921458789503-ensure-feishu-rooms-runs-smoothly-on-the-company-intranet)
+
 小红书、京东、淘宝、飞书和国内影音服务按业务域名及 CDN 直连。扩大覆盖时参考 NetAPI 的中国市场前 100 样本（2026 年 11 月 20 日页面快照）。NetAPI 以中国地区 Chrome 流量数据和自身热度信号排序。主配置选取可直连的国内服务域名，广告匹配优先于这些直连规则。榜单来源 NetAPI，CC BY 4.0。 [中国市场榜单](https://netapi.com/top-websites/cn/) · [NetAPI](https://netapi.com/) · [飞书网络说明](https://www.feishu.cn/hc/en-US/articles/921458789503-ensure-feishu-rooms-runs-smoothly-on-the-company-intranet)
 
 App Store、Apple Music、iCloud、TestFlight、DeepSeek 网页和 API、迅雷业务域名和常用下载 CDN 均走直连。目标已知的 Apple `17.0.0.0/8` 连接也走直连。局域网设备发现的 mDNS 组播由本地网络处理。 [Apple 网络说明](https://support.apple.com/en-euro/101555) · [DeepSeek API](https://api-docs.deepseek.com/api/responses) · [迅雷域名参考](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Shadowrocket/Xunlei/Xunlei.list)

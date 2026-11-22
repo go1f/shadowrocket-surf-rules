@@ -35,11 +35,19 @@ class BuildTests(unittest.TestCase):
                 "sns-video-v6.xhscdn.com", "mediacloud.xiaohongshu.com", "aks.jdpay.com",
                 "gw.alipayobjects.com", "acs.m.goofish.com", "frodo.douban.com", "wanproxy.127.net",
                 "acgvideo.com", "lf-imfile-cn.feishucdn.com", "www.douyin.com", "www.1688.com",
+                "example.oss-cn-hangzhou.aliyuncs.com", "ap-shanghai.cls.tencentcs.com",
+                "example.cos.ap-shanghai.myqcloud.com", "bj.bcebos.com", "httpdns.baidubce.com",
+                "demo-frontier.feishu.cn", "a.byteimg.com", "a.bdurl.net", "a.365yg.com",
+                "a.ctobsnssdk.com", "a.snssdk.com", "a.pstatp.com", "a.toutiaocloud.com",
+                "a.bytedance.com", "a.bytevcloud.com", "ntp1.aliyun.com", "time1.cloud.tencent.com",
             ):
                 with self.subTest(host=host):
                     policy = next((policy for kind, domain, policy in domain_rules
                                    if host == domain or (kind == "DOMAIN-SUFFIX" and host.endswith("." + domain))), "PROXY")
                     self.assertEqual(policy, "DIRECT")
+            self.assertNotIn("DOMAIN,alibaba-cn-pvg-00001.oss-enet.aliyuncs.com,DIRECT", config)
+            for host in ("time.windows.com", "android.pool.ntp.org"):
+                self.assertLess(config.index(f"AND,((DOMAIN,{host}),(PROTOCOL,UDP),(DST-PORT,123)),DIRECT"), config.index("FINAL,PROXY"))
             self.assertLess(config.index("IP-CIDR,17.0.0.0/8,DIRECT,no-resolve"), config.index("FINAL,PROXY"))
             self.assertLess(config.index("IP-CIDR6,2409:8000::/20,DIRECT,no-resolve"), config.index("FINAL,PROXY"))
             for domain in ("mzstatic.com", "baidu.com", "meituan.net", "zhimg.com", "qiyipic.com"):
