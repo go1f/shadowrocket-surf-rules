@@ -40,6 +40,7 @@ class BuildTests(unittest.TestCase):
                 "demo-frontier.feishu.cn", "a.byteimg.com", "a.bdurl.net", "a.365yg.com",
                 "a.ctobsnssdk.com", "a.snssdk.com", "a.pstatp.com", "a.toutiaocloud.com",
                 "a.bytedance.com", "a.bytevcloud.com", "ntp1.aliyun.com", "time1.cloud.tencent.com",
+                "m.quyundong.com", "api.day.app",
             ):
                 with self.subTest(host=host):
                     policy = next((policy for kind, domain, policy in domain_rules
@@ -64,6 +65,7 @@ class BuildTests(unittest.TestCase):
             for rule in (
                 "DOMAIN,ws.chatgpt.com", "DOMAIN-SUFFIX,cloudflare.com", "DOMAIN,captive.apple.com",
                 "DOMAIN,mmsns.qpic.cn", "DOMAIN-SUFFIX,qq.com",
+                "DOMAIN,m.quyundong.com", "DOMAIN-SUFFIX,day.app",
             ):
                 with self.subTest(rule=rule):
                     path.write_text(rule, encoding="utf-8")

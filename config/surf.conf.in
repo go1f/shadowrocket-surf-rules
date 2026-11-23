@@ -75,6 +75,10 @@ DOMAIN,vweixinthumb.tc.qq.com,DIRECT
 DOMAIN,wxapp.tc.qq.com,DIRECT
 DOMAIN,finder.video.qq.com,DIRECT
 
+# 趣运动和 Bark 推送 API
+DOMAIN-SUFFIX,quyundong.com,DIRECT
+DOMAIN,api.day.app,DIRECT
+
 # 广告拦截优先于常用国内域名直连
 {{AD_RULES}}
 
