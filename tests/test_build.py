@@ -41,6 +41,7 @@ class BuildTests(unittest.TestCase):
                 "a.ctobsnssdk.com", "a.snssdk.com", "a.pstatp.com", "a.toutiaocloud.com",
                 "a.bytedance.com", "a.bytevcloud.com", "ntp1.aliyun.com", "time1.cloud.tencent.com",
                 "quyundong.com", "m.quyundong.com", "day.app", "api.day.app", "example.day.app",
+                "bspapp.com", "example.bspapp.com",
             ):
                 with self.subTest(host=host):
                     policy = next((policy for kind, domain, policy in domain_rules
