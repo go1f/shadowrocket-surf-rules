@@ -8,7 +8,7 @@
 2. 在「配置」粘贴链接或导入下载好的文件，选择「使用配置」，并把「全局路由」设为「配置」。文件内已包含广告规则。 [go1f-surf.conf](https://raw.githubusercontent.com/go1f/shadowrocket-surf-rules/release/go1f-surf.conf)
 3. 在首页选择一个筛选后保留的节点。`PROXY` 使用首页当前节点，ChatGPT 和其他代理流量共用它。若要固定使用当前节点，在全局路由设置中关闭「启用回退」。节点地区以实际出口为准。
 
-如需更新 `GEOIP,CN` 使用的国家库，在 Shadowrocket 打开「设置 → GeoLite2 数据库 → 国家」，粘贴下载链接后点「更新」。默认可用客户端内置库。 [Loyalsoldier Country.mmdb](https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country.mmdb)
+如需更新 `GEOIP,CN` 使用的国家库，在 Shadowrocket 打开「设置 → GeoLite2 数据库 → 国家」，粘贴下载链接后点「更新」。默认可用客户端内置库。 [Hackl0us GeoIP2-CN Country.mmdb](https://raw.githubusercontent.com/Hackl0us/GeoIP2-CN/release/Country.mmdb)
 
 常用国内服务和局域网直连，其余流量由 `FINAL,PROXY` 处理。加密 DNS 端点都使用 IP 地址，可以直接建立 TLS 连接。配置关闭系统 DNS 回退，覆盖 Shadowrocket 接管的 DNS 请求。代理服务端解析和 App 自带解析取决于各自的环境。
 
