@@ -4,9 +4,11 @@
 
 ## 导入和选节点
 
-1. 在 Shadowrocket 首页更新自己的服务器订阅。需要筛选地区或名称时，打开该订阅的 `ⓘ → 过滤`，保存后刷新订阅。
+1. 在 Shadowrocket 首页打开私人订阅的 `ⓘ → 过滤`，粘贴整行正则（保留两端的 `/`），保存后刷新该订阅。 [私人过滤规则](#私人过滤规则)
 2. 在「配置」粘贴链接或导入下载好的文件，选择「使用配置」，并把「全局路由」设为「配置」。文件内已包含广告规则。 [go1f-surf.conf](https://raw.githubusercontent.com/go1f/shadowrocket-surf-rules/release/go1f-surf.conf)
 3. 在首页选择一个筛选后保留的节点。`PROXY` 使用首页当前节点，ChatGPT 和其他代理流量共用它。若要固定使用当前节点，在全局路由设置中关闭「启用回退」。节点地区以实际出口为准。
+
+如需更新 `GEOIP,CN` 使用的国家库，在 Shadowrocket 打开「设置 → GeoLite2 数据库 → 国家」，粘贴下载链接后点「更新」。默认可用客户端内置库。 [Loyalsoldier Country.mmdb](https://raw.githubusercontent.com/Loyalsoldier/geoip/release/Country.mmdb)
 
 常用国内服务和局域网直连，其余流量由 `FINAL,PROXY` 处理。加密 DNS 端点都使用 IP 地址，可以直接建立 TLS 连接。配置关闭系统 DNS 回退，覆盖 Shadowrocket 接管的 DNS 请求。代理服务端解析和 App 自带解析取决于各自的环境。
 
@@ -17,6 +19,12 @@
 小红书、京东、淘宝、飞书和国内影音服务按业务域名及 CDN 直连。扩大覆盖时参考 NetAPI 的中国市场前 100 样本（2026 年 11 月 20 日页面快照）。NetAPI 以中国地区 Chrome 流量数据和自身热度信号排序。主配置选取可直连的国内服务域名，广告匹配优先于这些直连规则。榜单来源 NetAPI，CC BY 4.0。 [中国市场榜单](https://netapi.com/top-websites/cn/) · [NetAPI](https://netapi.com/) · [飞书网络说明](https://www.feishu.cn/hc/en-US/articles/921458789503-ensure-feishu-rooms-runs-smoothly-on-the-company-intranet)
 
 App Store、Apple Music、iCloud、TestFlight、DeepSeek 网页和 API、迅雷业务域名和常用下载 CDN 均走直连。目标已知的 Apple `17.0.0.0/8` 连接也走直连。局域网设备发现的 mDNS 组播由本地网络处理。 [Apple 网络说明](https://support.apple.com/en-euro/101555) · [DeepSeek API](https://api-docs.deepseek.com/api/responses) · [迅雷域名参考](https://github.com/blackmatrix7/ios_rule_script/blob/master/rule/Shadowrocket/Xunlei/Xunlei.list)
+
+## 私人过滤规则
+
+```text
+/(?i)^(?!.*(?:免费|免費|下[载載]\s*[专專]用|香港|澳门|澳門|中国大陆|中國大陸|🇭🇰|🇲🇴|🇨🇳|(?:^|[^a-z])(?:hk|hkg|mo|mac|cn|chn|hong[ _-]*kong|macau|macao)(?![a-z])))(?=.*(?:日本|东京|東京|大阪|新加坡|狮城|獅城|美国|美國|🇯🇵|🇸🇬|🇺🇸|(?:^|[^a-z])(?:jp|jpn|japan|tokyo|osaka|sg|sgp|singapore|us|usa|united[ _-]*states)(?![a-z]))).+$/
+```
 
 ## 六个 App 的开屏增强
 
