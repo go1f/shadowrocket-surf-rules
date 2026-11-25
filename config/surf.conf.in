@@ -180,6 +180,7 @@ DOMAIN-SUFFIX,zhaopin.com,DIRECT
 DOMAIN-SUFFIX,dpfile.com,DIRECT
 DOMAIN-SUFFIX,sankuai.com,DIRECT
 DOMAIN-SUFFIX,xiaopeng.com,DIRECT
+DOMAIN-WILDCARD,*.xiaopeng.*,DIRECT
 DOMAIN-SUFFIX,58.com,DIRECT
 
 DOMAIN-SUFFIX,cn,DIRECT
@@ -234,3 +235,7 @@ IP-ASN,132203,DIRECT,no-resolve
 IP-CIDR6,2409:8000::/20,DIRECT,no-resolve
 GEOIP,CN,DIRECT,no-resolve
 FINAL,PROXY
+
+[Host]
+*.local = server:system
+*.xiaopeng.* = server:system

@@ -25,6 +25,10 @@ class BuildTests(unittest.TestCase):
                 self.assertLess(config.index("DOMAIN-SUFFIX,chatgpt.com,PROXY"), position)
                 self.assertLess(position, config.index("DOMAIN-SUFFIX,cn,DIRECT"))
             self.assertIn("FINAL,PROXY\n", config)
+            self.assertEqual(config.split("\n[Host]\n", 1)[1].splitlines(), [
+                "*.local = server:system", "*.xiaopeng.* = server:system",
+            ])
+            self.assertLess(config.index("DOMAIN-WILDCARD,*.xiaopeng.*,DIRECT"), config.index("FINAL,PROXY"))
             domain_rules = [line.split(",") for line in config.splitlines() if line.startswith(("DOMAIN,", "DOMAIN-SUFFIX,"))]
             for host in (
                 "apps.apple.com", "buy.itunes.apple.com", "audio-ssl.itunes.apple.com", "music.apple.com",

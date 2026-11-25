@@ -12,6 +12,8 @@
 
 常用国内服务和局域网直连，其余流量由 `FINAL,PROXY` 处理。加密 DNS 端点都使用 IP 地址，可以直接建立 TLS 连接。配置关闭系统 DNS 回退，覆盖 Shadowrocket 接管的 DNS 请求。代理服务端解析和 App 自带解析取决于各自的环境。
 
+`*.local` 和 `*.xiaopeng.*` 使用当前网络的系统解析器。
+
 微信图片上传、图片 CDN 和朋友圈视频的已知域名优先直连。直接连接腾讯全球网络 `AS132203` 的流量也可命中直连，匹配时使用连接已有的目标 IP。
 
 阿里云、腾讯云和百度智能云的公共服务域名按后缀直连，覆盖这些域名下的海外节点。飞书 Rooms 的文件、会议域名和信令直连，两条新增的校时规则仅匹配对应主机的 UDP 123。 [阿里云 OSS 端点](https://help.aliyun.com/en/oss/user-guide/regions-and-endpoints) · [飞书 Rooms 网络清单](https://www.feishu.cn/hc/en-US/articles/921458789503-ensure-feishu-rooms-runs-smoothly-on-the-company-intranet)
